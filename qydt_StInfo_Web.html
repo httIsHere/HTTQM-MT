@@ -1,0 +1,147 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="DateTimePicker.css" />
+    <script src="https://code.jquery.com/jquery.js"></script>
+	<script src="http://cdn.hcharts.cn/highcharts/highcharts.js"></script>
+    <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="DateTimePicker.js"></script>
+	<style type="text/css">
+		body, html {width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
+		#allmap{width:100%;height:500px;}
+		p{margin-left:5px; font-size:14px;}
+		.row{margin: 0;}
+		#dateInput{background: rgba(0,0,0,0);border:#ffa579 solid 1px; width: 50%;display: inline-flex;margin-left: 5%; color: #ffa579; height: 30px;}
+		#dateBtn{float: right; margin-right: 5%; border:rgb(124, 181, 236) solid 1px; color: rgb(124, 181, 236); height: 30px;}
+	</style>
+	<title>数据统计</title>
+</head>
+<body style="background-color: #fff;margin:0;">
+	<div class="container" style="margin-top: 5%;">
+		<div class="row">
+    			<div class="col-xs-12"><label>选择日期(默认到今天的近7天扫描记录)</label></div>
+    			<input type="text" class="timePickerStyle form-control col-xs-6" data-field="date" data-format="yyyy-MM-dd" readonly id="dateInput">
+    			<input type="button" name="dateBtn" class="btn1 btn btn-default col-xs-2" id="dateBtn" value="确定" onclick="getStatisticData()"/>
+    			<div id="datepicker"></div>
+		</div>
+	</div>
+	<div id="container" style="min-width:100%;height:400px"></div>
+	<div class="container" style="padding: 0;">
+    	<!--显示所有数据-->
+    	<div class="row" id="StatisticNum">
+    		<div class="col-xs-6 text-center">总扫描用户：<span id="userNum"></span></div>
+    		<div class="col-xs-6 text-center">扫描总次数：<span id="scanNum"></span></div>
+    	</div>
+	</div>
+	<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+	<script type="text/javascript">
+	var userId = window.location.search;
+	userId = userId.substr(8,userId.length-8);
+	init();
+	function init(){
+		//日期框的初始化
+
+		$('#datepicker').DateTimePicker();
+        var date = new Date(new Date().getTime());
+        var nowDate = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate();
+        //对当前时间进行格式化
+		$('#dateInput').val(nowDate);
+
+		// getCharts();
+		getStatisticData();
+	}
+	//计算前一天,使图表地x轴动态显示
+	function preDay(now){
+		var l = new Array();
+		if(now.indexOf("-") >= 0)
+		var data = now.split("-");
+		else var data = now.split("/");
+		var year = data[0];
+		var month = data[1];
+		var day = data[2];
+		var dd = new Date();
+		for(var i = 6; i >= 0;i--){
+		var d = new Date(year, month-1, day);
+		dd.setTime(d.getTime()-24*60*60*1000*i);
+  		var y = dd.getFullYear();
+    	var m = dd.getMonth()+1;
+    	var d = dd.getDate();
+    	l.push(([y,m,d].join('-')));
+    	}
+    	return l;
+	}
+
+	//生成图表
+	function getCharts(user, msg){
+		// console.log(user+msg);
+		var now = $('#dateInput').val();
+		var label = preDay(now);
+		// console.log(label);
+		var chart = new Highcharts.Chart('container', {// 图表初始化函数，其中 container 为图表的容器
+    		chart: {
+        		type: 'bar'                           //指定图表的类型，默认是折线图（line）
+    			},
+    		title: {
+        		text: '数据统计'                 //指定图表标题
+    			},
+    		xAxis: {
+        		categories: label   //指定x轴分组
+    		},
+    		yAxis: {
+        		title: {
+            		text: '每日扫描用户量/扫描次数'                 //指定y轴的标题
+        		},
+        		allowDecimals:false, //是否支持小数
+				min: 0,
+				minRange: 1
+    		},
+    		series: [{                                 //指定数据列
+        		name: '扫描用户量',                          //数据列名
+        		color: '#ffa579',
+        		data: user                        //数据
+    			}, {
+        		name: '扫描次数',
+        		data: msg
+    		}],
+    		credits:{
+     			enabled:false // 禁用版权信息
+			}
+		});
+		}
+
+	//得到数据统计的数据
+	function getStatisticData(){
+		var time = $('#dateInput').val();
+		// console.log(time);
+		if(time == null || time == ""){
+			var date = new Date(new Date().getTime());
+			var nowDate = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate();
+			// time = nowDate;
+			$('#dateInput').val(nowDate);
+		}
+		$.ajax({
+			type:"post",
+			url:"qydt_StInfo_getStatic_Mid.php",
+			dataType:"json",
+			data:{user:userId,dateTime:time},
+			success:function(data){
+				var res = eval(data);
+				// console.log(res);
+				if(res != null){
+					getCharts(res['userNum'], res['msgNum']);
+					$('#userNum').text(res['totalUserNum']);
+					$('#scanNum').text(res['totalMsgNum']);
+				}
+			}
+		});
+	}
+	</script>
+</body>
+<script type="text/javascript">
+</script>

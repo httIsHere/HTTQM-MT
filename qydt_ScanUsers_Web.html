@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<link href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="qydt_userIndexStyle.css">
+	<script src="https://code.jquery.com/jquery.js"></script>
+	<script src="iSlider.js"></script>
+	<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<style type="text/css">
+		body, html {width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
+		#allmap{width:100%;height:500px;}
+		p{margin-left:5px; font-size:14px;}
+		#userInfoTab{
+			background-color: #FFFFFF;
+		}
+		#userInfoTab tr{
+			border-bottom: 1px solid #dddddd;
+			/*background-color: #FFFFFF;*/
+		}
+		#userInfoTab div {
+			margin:8% 0;
+		}
+		hr{
+			margin-bottom: 0;
+		}
+	</style>
+	<title>扫描用户</title>
+</head>
+<body style="background-color: #fff;margin:0;">
+<div class="container">
+	<div class="row userInfo statisticShow" id="StatisticUserInfo">
+		<div class="h3 text-center" style="font-size:18px;">扫描我二维码的用户列表</div>
+		<hr>
+		<table id="userInfoTab">
+			<col width="20%" />
+			<col width="30%" />
+			<col width="50%" />
+			<tbody class="text-center" id="userList">
+			</tbody>
+		</table>
+	</div>
+</div>
+</body>
+<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+<script type="text/javascript">
+//	alert("此用户的Open ID是"+window.location.search);
+var userId = window.location.search;
+userId = userId.substr(8,userId.length-8);
+localStorage['userId'] = userId;
+//默认头像
+var head = "head.jpeg";
+getUserInfor();
+//-------------------扫描用户---------------------
+//时间格式化
+function formatMyTime(str){
+	var d = new Date(str*1000);
+	commonTime = d.toLocaleString('chinese',{hour12:false});
+	return commonTime;
+}
+//显示扫描用户
+function showUserInfo(data){
+    var res = eval(data);
+    var code = "";
+    if(res != null && res.length > 0){
+        for(var i = 0; i < res.length; i++){
+        	var scanUserName = res[i].nickname;
+            if(res[i].nickname == ""){
+                scanUserName = "公众号用户";
+            }
+        	var scanUserImg = res[i].headimgurl;
+        	if(res[i].headimgurl == ""){
+                scanUserImg = head;
+            }
+        	var scanUserGender;
+            if(res[i].sex == '2')
+                scanUserGender = "女";
+            else if(res[i].sex == '1'){
+                scanUserGender = "男";
+            } else scanUserGender = "不明";
+        	var scanUserLocation = res[i].city;
+					if(scanUserLocation == null || scanUserLocation == ""){
+						scanUserLocation = "无";
+					}
+            //将时间戳转换成日期
+            var d = new Date(res[i]["max(CreateTime)"]);
+        	code+='<tr><td><img src="'+scanUserImg+'" style="width: 20vw;height: 20vw;margin-left: 5px;border-radius: 10vw"></td>' +
+				'<td><div class="scanUserName">'+scanUserName+'</div><div class="scanUserGender">'+scanUserGender+'</div></td>' +
+				'<td> <div class="scanUserLocation">'+scanUserLocation+'</div> <div class="scanTime">'+formatMyTime(parseInt(res[i].CreateTime))+'</div> </td> </tr>';
+        }
+	}
+	else{
+		$('body').append('<div style="text-align:center;width:100px;height:50px;line-height:50px;position:absolute;top:50%;left:50%;margin:-25px 0 0 -50px;">暂无扫描用户</div>');
+	}
+	$("#userList").html(code);
+}
+	//得到扫描用户信息
+	function getUserInfor(){
+		var info = null;
+		$.ajax({
+			type:"post",
+			url:"qydt_ScanU_getUserInfor_Mid.php",
+			dataType:"json",
+			data:{user:userId},
+			success:function(data){
+            	console.log(data);
+                showUserInfo(data);
+			},
+			error:function(){
+				$("#userList").html("<tr><td class='text-center'><label>获取数据失败</label></td></tr>");
+			}
+		});
+	}
+</script>

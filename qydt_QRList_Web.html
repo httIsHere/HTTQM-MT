@@ -1,0 +1,572 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<link href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="qydt_userIndexStyle.css">
+	<link rel="stylesheet" href="iSlider.css">
+  	<link rel="stylesheet" type="text/css" href="sweetalert.css">
+	<link type="text/css" rel="stylesheet" href="fileinput.css" />
+	<script src="https://code.jquery.com/jquery.js"></script>
+  	<script type="text/javascript" src="sweetalert-dev.js"></script>
+	<script type="text/javascript" src="fileinput.js"></script>
+	<script type="text/javascript" src="zh.js"></script>
+	<script src="iSlider.js"></script>
+	<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="iSlider.plugin.dot.js"></script>
+<script type="text/javascript" src="iSlider.plugin.button.js"></script>
+	<style type="text/css">
+		body, html {width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
+		#allmap{width:100%;height:500px;}
+		p{margin-left:5px; font-size:14px;}
+		.islider-outer{
+			list-style: none;
+			padding:0;
+		}
+		.islider-outer li{
+			list-style: none;
+			padding:0;
+			overflow-y: auto;
+		}
+		#iSlider-wrapper{
+			width:100%;
+			height:89vh;
+			overflow-y: scroll;
+			border:1px solid #dddddd;
+			background: #f8f8f8;
+			border-radius: 10px;
+			padding:2%;
+		}
+		#iSlider-wrapper ul {
+			list-style: none;
+			padding: 0;
+			overflow: hidden;
+		}
+		#iSlider-wrapper li{
+			display: block;
+		}
+		#resultList{
+			margin-left: 2.5%;
+		}
+		.myArrow{
+			width:50px;
+			height:50px;
+			position:fixed;
+			top:50%;
+			margin-top:-25px;
+			opacity:0.4;
+		}
+		.myArrow:nth-child(2){
+			right: 0;
+			-webkit-transform: rotate(180deg);
+			-ms-transform: rotate(180deg);
+			transform: rotate(180deg);
+		}
+		#summary{
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+		.islider-btn-outer {
+            background-color: rgba(0, 0, 0, 0);
+            border-radius: 99px;
+        }
+
+        .islider-btn-inner {
+            height: 30%;
+            width: 30%;
+            margin-top: 34%;
+        }
+				.islider-btn-outer.left {
+            margin-left: -5%;
+				}
+				.islider-btn-outer.right{
+					 margin-right: -5%;
+				 }
+        .islider-btn-inner {
+            margin-left: 40%;
+	        	margin-right: 40%;
+        }
+				.islider-btn-inner-img{
+					opacity: 0.4;
+				}
+				.islider-btn-outer.right img{
+					-webkit-transform: rotate(180deg);
+					-ms-transform: rotate(180deg);
+					transform: rotate(180deg);
+				}
+	</style>
+	<title>我的二维码</title>
+</head>
+<body style="background-color: #f3f3f3;margin:0;">
+<div class="container">
+	<div id="myQRCodeTabContent contentPage">
+		<div class="QRlist in active" id="QRCodeList">
+			<!-- <div class="h3 text-info text-center" style="margin-top:0;">信息列表</div> -->
+			<p class="text-center" style="margin-top:15px;">左右滑动查看下一个</p>
+			<table  width="95%" id="resultList">
+				<tbody class="text-center">
+					<tr>
+						<td>
+							<div  id="iSlider-wrapper"></div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<br />
+	</div>
+</div>
+<!-- 左右箭头 -->
+<!-- <div class="myArrow"> -->
+	<!-- <img src="qydt_QRList_arrow-r.png" class="myArrow"> -->
+	<!-- <img src="arrow-r.png" class="myArrow"> -->
+<!-- </div> -->
+<!-- 模态框（Modal）二维码删除 -->
+<div class="modal fade" id="checkDeleteQRCode" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="color: #000000;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">确定删除二维码？</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="createBtn" onclick="deleteQRCode(codeId)">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<!-- /.modal -->
+<!--信息编辑-->
+<div class="modal fade" id="editSceneInfo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="color: #000000;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">修改信息</h4>
+            </div>
+            <div class="modal-body">
+                    <div align="left">标题<span class="redText">(必填*)</span></div>
+            		<input type="text" id="unitName" class="form-control"/>
+            		<div align="left">简介（地址，联系人，联系电话）</div>
+            		<textarea id="desp" rows="4" class="form-control"></textarea>
+                    <div align="left">场景图片</span></div>
+            		<img id="sceneImgShow" src="" style="width: 15vw; height: 10vw;" />
+                    <br>
+                    <input type="file" id="sceneImage"/>
+            		<div align="left">图文链接</span></div>
+            		<input type="text" id="sceneUrl" class="form-control" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-warning" id="createBtn" onclick="editQRCodeInfo(codeId)">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<!-- 加载动画效果 -->
+<div class="spinner" style="display: none;">
+  <div class="spinner-container container1">
+    <div class="circle1"></div>
+    <div class="circle2"></div>
+    <div class="circle3"></div>
+    <div class="circle4"></div>
+  </div>
+  <div class="spinner-container container2">
+    <div class="circle1"></div>
+    <div class="circle2"></div>
+    <div class="circle3"></div>
+    <div class="circle4"></div>
+  </div>
+  <div class="spinner-container container3">
+    <div class="circle1"></div>
+    <div class="circle2"></div>
+    <div class="circle3"></div>
+    <div class="circle4"></div>
+  </div>
+</div>
+</body>
+<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+<script type="text/javascript">
+//	alert("此用户的Open ID是"+window.location.search);
+var userId = window.location.search;
+userId = userId.substr(8,userId.length-8);
+localStorage['userId'] = userId;
+//用于保存二维码信息
+var qrinfo;
+//二维码标识
+var codeIndex,codeTicket,codeId;
+
+//----------------------------获得二维码数据----------------------------
+getInfos();
+//数据内容函数
+function getContent(sceneid, title, desp, img, url, qrcode, qrimg){
+	var content={content:'<div class="">'+title+'</div>'+
+'<div><img src="'+qrcode+'" style="height:70vw;width:70vw;margin:3% auto;" ></div>'+
+'<div class="row"><div class="col-xs-5">'+
+'<img src="'+img+'" class="pull-right" style="height:20vw;width:20vw;margin:2% 0;" >'+
+'</div><div class="col-xs-7"><div style="width:90%;word-wrap:break-word;text-align: left;">描述：<p id="summary">'+desp+'</p></div></div></div>'+
+'<div style="width:80%;word-wrap:break-word;margin:2% 10%">图文链接:<p><a href="'+url+'">'+url+'</a></p></div>'+
+'<div><input type="button" name="delete" id="delete'+sceneid+'" class="btn btn-danger deleteBtn" value="删除" onclick="getCodeId(this.id,this.index)"/>&nbsp;&nbsp;'+
+'<input type="button" name="edit" id="edit'+sceneid+'" class="btn btn-warning editBtn" value="编辑" onclick="getCodeIdToEdit(this.id,this.index)"/>&nbsp;&nbsp;'+
+'<a href="'+qrcode+'" download="'+title+'.jpg"><input type="button" class="btn btn-primary deleteBtn" value="下载" /></a></div>'};
+	return content;
+}
+//获取数据并显示
+function getInfos(){
+    	$.ajax({
+    		type:"post",
+    		url:"qydt_NewQR_Mid.php",
+    		dataType:"json",
+    		data:{type:0,UserWebID:userId},
+    		success:function(data){
+                // showQRCodeList(data);
+                var res = eval(data);
+				//侧滑组件数据
+				var mydata=new Array();
+				if(res != null && res.length > 0){
+					qrinfo = res;
+					console.log(res);
+					for(var i = 0; i < res.length; i++){
+						SceneName=res[i].SceneName;
+						SceneDesp=res[i].SceneDescription;
+                		SceneImg=res[i].SceneImage;
+                		SceneUrl=res[i].SceneUrl;
+                		SceneID = res[i].SceneID;
+                		QRCodeImgFileName="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket="+res[i].Ticket;
+                		if(SceneImg == "" || SceneImg == null){
+                    		SceneImg = "defaultImg.png";
+                		}
+                		if(SceneUrl == "" || SceneUrl == null){
+                    		SceneUrl = "https://mp.weixin.qq.com/s/MkCXSthZg714jXe0VVZeqQ";
+                		}
+										qrimg = res[i].QRCodeImgFileName;
+                		var content = getContent(SceneID,SceneName,SceneDesp,SceneImg,SceneUrl,QRCodeImgFileName,qrimg);
+                		mydata.push(content);
+					}
+					// console.log(mydata);
+					//渲染数据
+					$('#iSlider-wrapper').html("");
+					var islider = new iSlider({
+						dom:document.getElementById('iSlider-wrapper'),
+						data:mydata,
+						isOverspread: 1,
+			 			animateTime: 800, // ms
+			 			plugins: ['button']
+					});
+				}
+				else{
+					//显示没有二维码
+					$('#iSlider-wrapper').html("");
+					$('body').append('<div style="width:70px;height:50px;line-height:50px;position:absolute;top:50%;left:50%;margin:-25px 0 0 -35px;">暂无二维码</div>');
+				}
+    		},
+    		error:function(){
+    			swal("","获取数据失败！","error");
+    		}
+    	});
+}
+
+//--------------------------二维码操作（删除+编辑）---------------
+function getCodeId(id,index){
+	$('#checkDeleteQRCode').modal('show');
+	codeId = id;
+	console.log(codeId+"-"+index);
+	codeId = codeId.substr(6,codeId.length-6);
+}
+function getCodeIdToEdit(id,index){
+	var index = 0;
+	codeId = id;
+	console.log(codeId+"-"+index);
+	codeId = codeId.substr(4,codeId.length-4);
+	//找到信息列表内的该场景
+	while(qrinfo[index] != null){
+		if(qrinfo[index].SceneID == codeId)
+			break;
+		else
+			index++;
+	}
+	$('#editSceneInfo .modal-body #unitName').val(qrinfo[index].SceneName);
+    $('#editSceneInfo .modal-body #desp').val(qrinfo[index].SceneDescription);
+    var showimg;
+    if(qrinfo[index].SceneImage == "" || qrinfo[index].SceneImage == null){
+        showimg = "defaultImg.png";
+    }
+    else showimg = qrinfo[index].SceneImage;
+    if(qrinfo[index].SceneUrl == "" || qrinfo[index].SceneUrl == null){
+        var url = "http://mp.weixin.qq.com/s/MkCXSthZg714jXe0VVZeqQ";
+   }
+    else
+        url = qrinfo[index].SceneUrl;
+    $('#editSceneInfo .modal-body #sceneImgShow').attr("src",qrinfo[index].SceneImage);
+    $('#editSceneInfo .modal-body #sceneUrl').val(url);
+    $('#editSceneInfo').modal('show');
+}
+//删除二维码
+    function deleteQRCode(id){
+    	$('#checkDeleteQRCode').modal('hide');
+    	$.ajax({
+    		type:"post",
+    		url:"qydt_NewQR_Mid.php",
+            dataType:"text",
+    		data:{type:3,sceneid:id},
+    		success:function(data){
+    			id = "delete"+id;
+    			// $('#'+id).parent().remove();
+                getInfos();
+                swal("成功",data,"success");
+                //对侧滑数组重新渲染
+
+    		},
+    		error:function(data){
+                getInfos();
+                swal("失败","二维码删除失败！","error");
+    		}
+    	});
+    }
+//----------------------文件上传输入框初始化----------------
+//修改二维码（如果有图片先进行图片上传）
+//初始化fileinput控件（第一次初始化）
+function initFileInput(ctrlName, uploadUrl) {
+ var control = $('#' + ctrlName);
+ control.fileinput({
+ language: 'zh', //设置语言
+ uploadUrl: uploadUrl, //上传的地址
+ allowedFileExtensions : ['jpg', 'png','gif'],//接收的文件后缀
+ showUpload: false, //是否显示上传按钮
+ showCaption: true,//是否显示标题
+ browseClass: "btn btn-warning", //按钮样式
+ dropZoneEnabled: false,//是否显示拖拽区域
+ previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+ });
+}
+//初始化fileinput控件（第一次初始化）
+initFileInput("sceneImage", "");
+//编辑函数
+function editQRCodeInfo(id){
+        $('#editSceneInfo').modal('hide');
+    	var unitName = $('#editSceneInfo .modal-body #unitName').val();
+        var desp = $('#editSceneInfo .modal-body #desp').val();
+        var newImg = $('#editSceneInfo .modal-body #sceneImage').val();
+        var sceneUrl = $('#editSceneInfo .modal-body #sceneUrl').val();
+        if(unitName == ""){
+            swal("注意","输入信息不完全，请检查必填部分","error");
+        }
+        else{
+        //没有修改图片
+        if(newImg == ""){
+            	$.ajax({
+            		type:"post",
+            		url:"qydt_NewQR_Mid.php",
+                    dataType:"text",
+            		data:{sceneid:id,type:4,unitName:unitName,desp:desp,sceneImg:newImg,sceneUrl:sceneUrl},
+                    beforeSend:function(data){
+                        //修改中
+                        $(".spinner").show(3);
+                    },
+           			success:function(data){
+                        $(".spinner").hide(3);
+                        if(data == "二维码修改成功！"){
+                            swal("成功",data,"success");
+                            getInfos();
+                        }
+                        else{
+                            swal("失败",data,"error");
+                        }
+           			},
+                    error:function(){
+                        swal("失败","二维码修改失败！","error");
+                    }
+            	});
+        }
+        //有修改图片
+        else{
+            //上传图片得到图片名称
+            getFileAndUpload(2,id);
+        }
+    }
+    }
+//获得图片对象并上传
+	function getFileAndUpload(op,id){
+        if(op == 1)
+		var img = $('#sceneImg').get(0).files[0];
+        else var img = $('#sceneImage').get(0).files[0];
+		if(!img){
+            return;
+        }
+        if(!(img.type.indexOf('image')==0 && img.type && /\.(?:jpg|png|gif)$/.test(img.name)) ){
+            return;
+        }
+        var reader = new FileReader();
+        reader.readAsDataURL(img);
+
+        reader.onload = function(e){ // reader onload start
+            // console.log(e.target.result);
+            // ajax 上传图片
+            $.post("qydt_NewQR_UploadImg_Mid.php", { img: e.target.result, user:userId},function(ret){
+                if(ret.img!=''){
+                	sceneImg = ret.img;
+                    sceneImage = ret.img;
+                    //生成二维码
+                    if(op == 1){
+                        checkInfoModal(ret.img);
+                    }
+                    //修改二维码
+                    else{
+        				var unitName = $('#editSceneInfo .modal-body #unitName').val();
+        				var desp = $('#editSceneInfo .modal-body #desp').val();
+        				var sceneUrl = $('#editSceneInfo .modal-body #sceneUrl').val();
+                        var account = $("#Account").val();
+                        var appId = $("#AppId").val();
+                        var appS = $("#AppSecret").val();
+                    $.ajax({
+                    type:"post",
+                    url:"qydt_NewQR_Mid.php",
+                    dataType:"text",
+                    data:{sceneid:id,type:4,unitName:unitName,desp:desp,sceneImg:sceneImage,sceneUrl:sceneUrl},
+                    beforeSend:function(data){
+                        //修改中
+                        $(".spinner").show(3);
+                    },
+                    success:function(data){
+                        $(".spinner").hide(3);
+                        if(data == "二维码修改成功！"){
+                            swal("成功",data,"success");
+                            getInfos();
+                        }
+                        else{
+                            swal("失败",data,"error");
+                        }
+                    },
+                    error:function(){
+                        swal("失败","二维码修改失败！","error");
+                    }
+                });
+
+                    }
+    				}
+                else{
+                    alertShow("所选图片出现问题");
+                }
+            },'json');
+        } // reader onload end
+	}
+</script>
+<style type="text/css">
+.spinner {
+  width: 60px;
+  height: 60px;
+  position: fixed;
+  top:50%;
+  left: 50%;
+  margin: -30px 0 0 -30px;
+  z-index: 9999;
+}
+
+.container1 > div, .container2 > div, .container3 > div {
+  width: 15px;
+  height: 15px;
+  background-color: #333;
+
+  border-radius: 100%;
+  position: absolute;
+  -webkit-animation: bouncedelay 1.2s infinite ease-in-out;
+  animation: bouncedelay 1.2s infinite ease-in-out;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+
+.spinner .spinner-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.container2 {
+  -webkit-transform: rotateZ(45deg);
+  transform: rotateZ(45deg);
+}
+
+.container3 {
+  -webkit-transform: rotateZ(90deg);
+  transform: rotateZ(90deg);
+}
+
+.circle1 { top: 0; left: 0; }
+.circle2 { top: 0; right: 0; }
+.circle3 { right: 0; bottom: 0; }
+.circle4 { left: 0; bottom: 0; }
+
+.container2 .circle1 {
+  -webkit-animation-delay: -1.1s;
+  animation-delay: -1.1s;
+}
+
+.container3 .circle1 {
+  -webkit-animation-delay: -1.0s;
+  animation-delay: -1.0s;
+}
+
+.container1 .circle2 {
+  -webkit-animation-delay: -0.9s;
+  animation-delay: -0.9s;
+}
+
+.container2 .circle2 {
+  -webkit-animation-delay: -0.8s;
+  animation-delay: -0.8s;
+}
+
+.container3 .circle2 {
+  -webkit-animation-delay: -0.7s;
+  animation-delay: -0.7s;
+}
+
+.container1 .circle3 {
+  -webkit-animation-delay: -0.6s;
+  animation-delay: -0.6s;
+}
+
+.container2 .circle3 {
+  -webkit-animation-delay: -0.5s;
+  animation-delay: -0.5s;
+}
+
+.container3 .circle3 {
+  -webkit-animation-delay: -0.4s;
+  animation-delay: -0.4s;
+}
+
+.container1 .circle4 {
+  -webkit-animation-delay: -0.3s;
+  animation-delay: -0.3s;
+}
+
+.container2 .circle4 {
+  -webkit-animation-delay: -0.2s;
+  animation-delay: -0.2s;
+}
+
+.container3 .circle4 {
+  -webkit-animation-delay: -0.1s;
+  animation-delay: -0.1s;
+}
+
+@-webkit-keyframes bouncedelay {
+  0%, 80%, 100% { -webkit-transform: scale(0.0) }
+  40% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes bouncedelay {
+  0%, 80%, 100% {
+    transform: scale(0.0);
+    -webkit-transform: scale(0.0);
+  } 40% {
+    transform: scale(1.0);
+    -webkit-transform: scale(1.0);
+  }
+}
+</style>
